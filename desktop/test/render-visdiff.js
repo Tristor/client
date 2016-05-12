@@ -1,5 +1,6 @@
 /* @flow */
 
+import process from 'process'
 import path from 'path'
 import fs from 'fs'
 import _ from 'lodash'
@@ -7,9 +8,14 @@ import {app, BrowserWindow, ipcMain} from 'electron'
 import {resolveRoot, resolveRootAsURL} from '../resolve-root'
 import dumbComponentMap from '../shared/more/dumb-component-map.desktop'
 
-const outputDir = resolveRoot('screenshots')
+if (process.argv.length != 3) {
+  console.log('Usage: electron render-visdiff.js DESTINATION')
+  process.exit(1)
+}
+const outputDir = process.argv[2]
 if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir)
+  console.log(`Error: output dir ${outputDir} does not exist`)
+  process.exit(1)
 }
 
 const toRender = []
