@@ -60,6 +60,6 @@ const styles = {
     position: 'absolute',
     top: 0,
     left: 0,
-    fontSize: 11
+    fontSize: 13
   }
 }
