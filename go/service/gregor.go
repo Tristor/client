@@ -30,7 +30,7 @@ func newGregorHandler(g *libkb.GlobalContext) *gregorHandler {
 	return &gregorHandler{Contextified: libkb.NewContextified(g)}
 }
 
-func (g *gregorHandler) Connect(uri *fmpURI) error {
+func (g *gregorHandler) Connect(uri *rpc.FMPURI) error {
 	var err error
 	if uri.UseTLS() {
 		err = g.connectTLS(uri)
@@ -278,7 +278,7 @@ func (g *gregorHandler) auth(ctx context.Context) error {
 	return nil
 }
 
-func (g *gregorHandler) connectTLS(uri *fmpURI) error {
+func (g *gregorHandler) connectTLS(uri *rpc.FMPURI) error {
 	g.G().Log.Debug("connecting to gregord via TLS")
 	rawCA := g.G().Env.GetBundledCA(uri.Host)
 	if len(rawCA) == 0 {
@@ -288,7 +288,7 @@ func (g *gregorHandler) connectTLS(uri *fmpURI) error {
 	return nil
 }
 
-func (g *gregorHandler) connectNoTLS(uri *fmpURI) error {
+func (g *gregorHandler) connectNoTLS(uri *rpc.FMPURI) error {
 	g.G().Log.Debug("connecting to gregord without TLS")
 	t := newConnTransport(g.G(), uri.HostPort)
 	g.conn = rpc.NewConnectionWithTransport(g, t, keybase1.ErrorUnwrapper{}, true, keybase1.WrapError, g.G().Log, nil)
