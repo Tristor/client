@@ -10,7 +10,7 @@ const defines = {
 }
 
 config.entry = {
-  'render-visdiff': ['./test/render-visdiff.js'],
+  'render-visdiff': ['./test/visdiff/render-visdiff.js'],
   visdiff: ['./shared/test/render-dumb-sheet.js']
 }
 config.plugins.push(

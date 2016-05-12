@@ -1,14 +1,13 @@
 /* @flow */
 
-import process from 'process'
 import path from 'path'
 import fs from 'fs'
 import _ from 'lodash'
 import {app, BrowserWindow, ipcMain} from 'electron'
-import {resolveRoot, resolveRootAsURL} from '../resolve-root'
-import dumbComponentMap from '../shared/more/dumb-component-map.desktop'
+import {resolveRoot, resolveRootAsURL} from '../../resolve-root'
+import dumbComponentMap from '../../shared/more/dumb-component-map.desktop'
 
-if (process.argv.length != 3) {
+if (process.argv.length !== 3) {
   console.log('Usage: electron render-visdiff.js DESTINATION')
   process.exit(1)
 }
