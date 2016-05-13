@@ -3149,6 +3149,17 @@ export type track_checkTracking_rpc = {
   callback: (null | (err: ?any) => void)
 }
 
+export type track_dismissWithToken_result = void
+
+export type track_dismissWithToken_rpc = {
+  method: 'track.dismissWithToken',
+  param: {
+    trackToken: TrackToken
+  },
+  incomingCallMap: ?incomingCallMapType,
+  callback: (null | (err: ?any) => void)
+}
+
 export type track_fakeTrackingChanged_result = void
 
 export type track_fakeTrackingChanged_rpc = {
@@ -3550,6 +3561,7 @@ export type rpc =
   | test_testCallback_rpc
   | test_test_rpc
   | track_checkTracking_rpc
+  | track_dismissWithToken_rpc
   | track_fakeTrackingChanged_rpc
   | track_trackWithToken_rpc
   | track_track_rpc
@@ -5346,6 +5358,16 @@ export type incomingCallMapType = {
       sessionID: int,
       trackToken: TrackToken,
       options: TrackOptions
+    },
+    response: {
+      error: (err: RPCError) => void,
+      result: () => void
+    }
+  ) => void,
+  'keybase.1.track.dismissWithToken'?: (
+    params: {
+      sessionID: int,
+      trackToken: TrackToken
     },
     response: {
       error: (err: RPCError) => void,

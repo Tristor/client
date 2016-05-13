@@ -26,6 +26,7 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/keybase/client/go/logger"
 	keybase1 "github.com/keybase/client/go/protocol"
+	gregor1 "github.com/keybase/gregor/protocol/gregor1"
 )
 
 type ShutdownHook func() error
@@ -39,35 +40,36 @@ type LogoutHook interface {
 }
 
 type GlobalContext struct {
-	Log               logger.Logger  // Handles all logging
-	VDL               *VDebugLog     // verbose debug log
-	Env               *Env           // Env variables, cmdline args & config
-	Keyrings          *Keyrings      // Gpg Keychains holding keys
-	API               API            // How to make a REST call to the server
-	Resolver          *Resolver      // cache of resolve results
-	LocalDb           *JSONLocalDb   // Local DB for cache
-	MerkleClient      *MerkleClient  // client for querying server's merkle sig tree
-	XAPI              ExternalAPI    // for contacting Twitter, Github, etc.
-	Output            io.Writer      // where 'Stdout'-style output goes
-	ProofCache        *ProofCache    // where to cache proof results
-	GpgClient         *GpgCLI        // A standard GPG-client (optional)
-	ShutdownHooks     []ShutdownHook // on shutdown, fire these...
-	SocketInfo        Socket         // which socket to bind/connect to
-	socketWrapperMu   sync.RWMutex
-	SocketWrapper     *SocketWrapper     // only need one connection per
-	LoopbackListener  *LoopbackListener  // If we're in loopback mode, we'll connect through here
-	XStreams          *ExportedStreams   // a table of streams we've exported to the daemon (or vice-versa)
-	Timers            *TimerSet          // Which timers are currently configured on
-	TrackCache        *TrackCache        // cache of IdentifyOutcomes for tracking purposes
-	Identify2Cache    Identify2Cacher    // cache of Identify2 results for fast-pathing identify2 RPCS
-	LinkCache         *LinkCache         // cache of ChainLinks
-	UI                UI                 // Interact with the UI
-	Service           bool               // whether we're in server mode
-	shutdownOnce      sync.Once          // whether we've shut down or not
-	loginStateMu      sync.RWMutex       // protects loginState pointer, which gets destroyed on logout
-	loginState        *LoginState        // What phase of login the user's in
-	ConnectionManager *ConnectionManager // keep tabs on all active client connections
-	NotifyRouter      *NotifyRouter      // How to route notifications
+	Log                     logger.Logger  // Handles all logging
+	VDL                     *VDebugLog     // verbose debug log
+	Env                     *Env           // Env variables, cmdline args & config
+	Keyrings                *Keyrings      // Gpg Keychains holding keys
+	API                     API            // How to make a REST call to the server
+	Resolver                *Resolver      // cache of resolve results
+	LocalDb                 *JSONLocalDb   // Local DB for cache
+	MerkleClient            *MerkleClient  // client for querying server's merkle sig tree
+	XAPI                    ExternalAPI    // for contacting Twitter, Github, etc.
+	Output                  io.Writer      // where 'Stdout'-style output goes
+	ProofCache              *ProofCache    // where to cache proof results
+	GpgClient               *GpgCLI        // A standard GPG-client (optional)
+	ShutdownHooks           []ShutdownHook // on shutdown, fire these...
+	SocketInfo              Socket         // which socket to bind/connect to
+	socketWrapperMu         sync.RWMutex
+	SocketWrapper           *SocketWrapper                        // only need one connection per
+	LoopbackListener        *LoopbackListener                     // If we're in loopback mode, we'll connect through here
+	XStreams                *ExportedStreams                      // a table of streams we've exported to the daemon (or vice-versa)
+	Timers                  *TimerSet                             // Which timers are currently configured on
+	TrackCache              *TrackCache                           // cache of IdentifyOutcomes for tracking purposes
+	TrackTokenToGregorMsgID map[keybase1.TrackToken]gregor1.MsgID // Gregor messages that tracking needs to dismiss
+	Identify2Cache          Identify2Cacher                       // cache of Identify2 results for fast-pathing identify2 RPCS
+	LinkCache               *LinkCache                            // cache of ChainLinks
+	UI                      UI                                    // Interact with the UI
+	Service                 bool                                  // whether we're in server mode
+	shutdownOnce            sync.Once                             // whether we've shut down or not
+	loginStateMu            sync.RWMutex                          // protects loginState pointer, which gets destroyed on logout
+	loginState              *LoginState                           // What phase of login the user's in
+	ConnectionManager       *ConnectionManager                    // keep tabs on all active client connections
+	NotifyRouter            *NotifyRouter                         // How to route notifications
 	// How to route UIs. Nil if we're in standalone mode or in
 	// tests, and non-nil in service mode.
 	UIRouter            UIRouter            // How to route UIs

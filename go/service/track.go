@@ -21,6 +21,8 @@ type TrackHandler struct {
 	lastCheckTime time.Time
 }
 
+var _ keybase1.TrackInterface = (*TrackHandler)(nil)
+
 // NewTrackHandler creates a TrackHandler for the xp transport.
 func NewTrackHandler(xp rpc.Transporter, g *libkb.GlobalContext) *TrackHandler {
 	return &TrackHandler{
@@ -57,6 +59,10 @@ func (h *TrackHandler) TrackWithToken(_ context.Context, arg keybase1.TrackWithT
 	}
 	eng := engine.NewTrackToken(&earg, h.G())
 	return engine.RunEngine(eng, &ctx)
+}
+
+func (h *TrackHandler) DismissWithToken(_ context.Context, arg keybase1.DismissWithTokenArg) error {
+	return nil
 }
 
 // Untrack creates an UntrackEngine and runs it.

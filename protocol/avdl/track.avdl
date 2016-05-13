@@ -16,6 +16,8 @@ protocol track {
     */
   void trackWithToken(int sessionID, TrackToken trackToken, TrackOptions options);
 
+  void dismissWithToken(int sessionID, TrackToken trackToken);
+
   void untrack(int sessionID, string username);
 
   void checkTracking(int sessionID);
