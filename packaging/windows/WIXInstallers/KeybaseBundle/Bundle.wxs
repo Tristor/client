@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle Name="Keybase" Version="$(env.KEYBASE_WINVER)" Manufacturer="Keybase, Inc." UpgradeCode="418432ab-0366-40fd-a396-8cc0c4200252">
+		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+      <bal:WixStandardBootstrapperApplication
+            LicenseUrl="https://keybase.io/docs/terms"
+            LogoFile="logo-64.bmp"
+            LicenseFile="license.rtf"
+            ShowVersion="yes"
+            />
+    </BootstrapperApplicationRef>
+		<Chain>
+      <ExePackage SourceFile="$(env.GOPATH)\bin\dokan-dev\dokan-v0.8.0\DokanInstall_0.8.0_redist.exe"
+          DetectCondition="ExeDetectedVariable"
+          PerMachine="yes"/>
+
+      <MsiPackage Id="KeybasePrograms" SourceFile="$(var.KeybaseApps.TargetPath)">
+          <MsiProperty Name="ISELEVATED" Value="1" />
+      </MsiPackage>
+		</Chain>
+	</Bundle>
+</Wix>

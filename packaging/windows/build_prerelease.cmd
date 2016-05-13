@@ -35,7 +35,8 @@ go build -a -tags "prerelease production" -ldflags="-X github.com/keybase/kbfs/l
 popd
 
 :: Then the desktop:
-pushd  %GOPATH%\src\github.com\keybase\client\desktop
+ pushd  %GOPATH%\src\github.com\keybase\client\desktop
+rmdir /s /y node_modules
 npm i
 
 buildui.bat
