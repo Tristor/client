@@ -3,9 +3,10 @@ import fs from 'fs'
 import path from 'path'
 import {execSync} from 'child_process'
 import gm from 'gm'
+import github from 'octonode'
 
 const BUCKET_S3 = 's3://keybase-app-visdiff'
-const BUCKET_HTTP = 'http://keybase-app-visdiff.s3.amazonaws.com/'
+const BUCKET_HTTP = 'http://keybase-app-visdiff.s3.amazonaws.com'
 
 function renderScreenshots (commitRange) {
   for (const commit of commitRange) {
@@ -18,7 +19,7 @@ function renderScreenshots (commitRange) {
 function compareScreenshots (commitRange, diffDir, callback) {
   const results = {}
 
-  execSync(`mkdir -p ${diffDir}`)
+  execSync(`mkdir -p screenshots/${diffDir}`)
 
   const files = fs.readdirSync(`screenshots/${commitRange[0]}`)
   function compareNext () {
@@ -30,7 +31,7 @@ function compareScreenshots (commitRange, diffDir, callback) {
 
     const oldPath = `screenshots/${commitRange[0]}/${filename}`
     const newPath = `screenshots/${commitRange[1]}/${filename}`
-    const diffPath = `${diffDir}/${filename}`
+    const diffPath = `screenshots/${diffDir}/${filename}`
     const compareOptions = {
       tolerance: 1e-6,  // leave a little wiggle room for antialiasing inconsistencies
       file: diffPath
@@ -60,9 +61,10 @@ const commitRange = process.argv[2]
 // TODO fudging commit range for testing
 commitRange[0] = 'b3904b9cb13c3fe81520c7632f0aa0cb826182fa'.substr(0, 12)
 
-const diffDir = `screenshots/${Date.now()}-${commitRange[0]}-${commitRange[1]}`
+const diffDir = `${Date.now()}-${commitRange[0]}-${commitRange[1]}`
 renderScreenshots(commitRange)
 compareScreenshots(commitRange, diffDir, results => {
+  const changed = []
   Object.keys(results).forEach(filePath => {
     if (results[filePath] === true) {
       fs.unlinkSync(filePath)
@@ -71,6 +73,7 @@ compareScreenshots(commitRange, diffDir, results => {
       for (const commit of commitRange) {
         execSync(`cp screenshots/${commit}/${filenameParts.base} ${filenameParts.dir}/${filenameParts.name}-${commit}${filenameParts.ext}`)
       }
+      changed.push(filenameParts.name)
     }
   })
 
@@ -79,7 +82,33 @@ compareScreenshots(commitRange, diffDir, results => {
     AWS_ACCESS_KEY_ID: process.env['VISDIFF_AWS_ACCESS_KEY_ID'],
     AWS_SECRET_ACCESS_KEY: process.env['VISDIFF_AWS_SECRET_ACCESS_KEY']
   }
-  console.log(`Uploading screenshots to ${BUCKET_S3}`)
-  execSync(`s3cmd put --acl-public -r ${diffDir} ${BUCKET_S3}`, {env: s3Env})
+  console.log(`Uploading ${diffDir} to ${BUCKET_S3}...`)
+  execSync(`s3cmd put --acl-public -r screenshots/${diffDir} ${BUCKET_S3}`, {env: s3Env})
   console.log('Screenshots uploaded.')
+
+  var ghClient = github.client(process.env['VISDIFF_GH_TOKEN'])
+  var ghIssue = ghClient.issue('keybase/client', process.env['TRAVIS_PULL_REQUEST'])
+
+  let commentBody
+  if (changed.length === 0) {
+    commentBody = ':white_check_mark: No visual changes found in stateless components.'
+  } else {
+    const commentLines = []
+    commentLines.push(':vs: Some components look different as a result of this changeset:\n')
+    changed.forEach(name => {
+      const diffURL = `${BUCKET_HTTP}/${diffDir}/${name}.png`
+      const beforeURL = `${BUCKET_HTTP}/${diffDir}/${name}-${commitRange[0]}.png`
+      const afterURL = `${BUCKET_HTTP}/${diffDir}/${name}-${commitRange[1]}.png`
+      commentLines.push(` * **[${name}](${diffURL})** --- [(before)](${beforeURL}) [(after)](${afterURL})`)
+    })
+    commentBody = commentLines.join('\n')
+  }
+
+  ghIssue.createComment({body: commentBody}, (err, res) => {
+    if (err) {
+      console.log('Failed to create GitHub issue:', err)
+      process.exit(1)
+    }
+    console.log('GitHub issue posted:', res.html_url)
+  })
 })
